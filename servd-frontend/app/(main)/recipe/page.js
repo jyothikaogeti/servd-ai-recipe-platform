@@ -1,0 +1,612 @@
+/* eslint-disable react-hooks/set-state-in-effect */
+"use client";
+
+import { Suspense, useEffect, useState } from "react";
+import { PDFDownloadLink } from "@react-pdf/renderer";
+import { useRouter, useSearchParams } from "next/navigation";
+import {
+  AlertCircle,
+  ArrowLeft,
+  Bookmark,
+  BookmarkCheck,
+  CheckCircle2,
+  ChefHat,
+  Clock,
+  Download,
+  Flame,
+  Lightbulb,
+  Loader2,
+  Users,
+} from "lucide-react";
+import { ClockLoader } from "react-spinners";
+import { toast } from "sonner";
+import Link from "next/link";
+import Image from "next/image";
+
+import {
+  getOrGenerateRecipe,
+  removeRecipeFromCollection,
+  saveRecipeToCollection,
+} from "@/actions/recipe.actions";
+import { useFetch } from "@/hooks/useFetch";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { RecipePDF } from "@/components/RecipePDF";
+import ProLockedSection from "@/components/ProLockedSection";
+
+function RecipeContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const recipeName = searchParams.get("cook");
+
+  const [recipe, setRecipe] = useState(null);
+  const [recipeId, setRecipeId] = useState(null);
+  const [isRecipeSaved, setIsRecipeSaved] = useState(false);
+
+  const {
+    isLoading: isLoadingRecipe,
+    data: recipeData,
+    execute: fetchRecipe,
+  } = useFetch(getOrGenerateRecipe);
+
+  const {
+    isLoading: isSavingRecipe,
+    data: savedRecipeData,
+    execute: saveToCollection,
+  } = useFetch(saveRecipeToCollection);
+
+  const {
+    isLoading: isRemovingRecipe,
+    data: removedRecipeData,
+    execute: removeFromCollection,
+  } = useFetch(removeRecipeFromCollection);
+
+  // Fetch Recipe On Mount
+  useEffect(() => {
+    if (!recipeName) return;
+
+    const formData = new FormData();
+    formData.append("recipeName", recipeName);
+
+    fetchRecipe(formData);
+  }, [recipeName]);
+
+  // Update recipe When Data Arrives
+  useEffect(() => {
+    if (recipeData?.success) {
+      if (recipeData?.success) {
+        setRecipe(recipeData.data);
+        setRecipeId(recipeData.recipeId);
+        setIsRecipeSaved(recipeData.isSaved);
+      }
+
+      if (recipeData.fromDatabase) {
+        toast.success("Recipe Loaded from Database");
+      } else {
+        toast.success("New Recipe Generated and Saved Successfully");
+      }
+    }
+  }, [recipeData]);
+
+  // Handle Save Success
+  useEffect(() => {
+    if (savedRecipeData?.success) {
+      if (savedRecipeData.alreadySaved) {
+        toast.info("Recipe is already in your Collection");
+      } else {
+        setIsRecipeSaved(true);
+        toast.success("Recipe Saved to your Collection");
+      }
+    }
+  }, [savedRecipeData]);
+
+  // Handle Remove Success
+  useEffect(() => {
+    if (removedRecipeData?.success) {
+      setIsRecipeSaved(false);
+      toast.success(removedRecipeData.message);
+    }
+  }, [removedRecipeData]);
+
+  // Handle Toggle Save / Unsave
+  const handleToggleSave = async () => {
+    if (!recipeId) return;
+
+    const formData = new FormData();
+    formData.append("recipeId", recipeId);
+
+    if (isRecipeSaved) {
+      await removeFromCollection(formData);
+    } else {
+      await saveToCollection(formData);
+    }
+  };
+
+  // No recipeName in URL
+  if (!recipeName) {
+    return (
+      <div className="min-h-screen bg-stone-50 pt-24 pb-16 px-4">
+        <div className="container max-w-4xl mx-auto text-center py-20">
+          <div className="w-20 h-20 bg-orange-50 border-2 border-orange-200 flex justify-center items-center mx-auto mb-6">
+            <AlertCircle className="w-10 h-10 text-orange-600" />
+          </div>
+
+          <h2 className="text-2xl text-stone-900 font-bold mb-2">
+            No Recipe Specified
+          </h2>
+
+          <p className="text-stone-600 font-light mb-6">
+            Please select a recipe from the dashboard
+          </p>
+
+          <Link href="/dashboard">
+            <Button className="bg-orange-600 hover:bg-orange-700">
+              Go to Dashboard
+            </Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  // Loading State
+  if (isLoadingRecipe === null || isLoadingRecipe) {
+    return (
+      <div className="min-h-screen bg-stone-50 pt-24 pb-16 px-4">
+        <div className="container max-w-4xl mx-auto">
+          <div className="text-center py-20">
+            <ClockLoader className="mx-auto mb-6" color="#dc6300" />
+
+            <h2 className="text-3xl text-stone-900 font-bold tracking-tight mb-2">
+              Preparing Your Recipe
+            </h2>
+
+            <p className="text-stone-600 font-light">
+              Our AI Chef is crafting detailed instructions for{" "}
+              <span className="text-orange-600 font-bold capitalize">
+                {recipeName}
+              </span>
+              ...
+            </p>
+
+            <div className="max-w-md mx-auto mt-8">
+              <div className="text-stone-500 text-sm flex items-center gap-3">
+                <div className="flex-1 relative bg-stone-200 overflow-hidden h-1">
+                  <div className="absolute top-0 left-0 h-full bg-orange-600 animate-slow-fill" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Error State
+  if (isLoadingRecipe === false && !recipe) {
+    return (
+      <div className="min-h-screen bg-stone-50 pt-24 pb-16 px-4">
+        <div className="container max-w-4xl mx-auto text-center py-20">
+          <div className="w-20 h-20 bg-red-50 border-2 border-red-200 flex justify-center items-center mx-auto mb-6">
+            <AlertCircle className="w-10 h-10 text-red-600" />
+          </div>
+
+          <h2 className="text-2xl text-stone-900 font-bold mb-2">
+            Failed to Load Recipe
+          </h2>
+
+          <p className="text-stone-600 font-light mb-6">
+            Something went wrong while loading the recipe. Please try again.
+          </p>
+
+          <div className="flex justify-center gap-3">
+            <Button
+              variant="outline"
+              className="border-2 border-stone-900 hover:bg-stone-900 hover:text-white"
+              onClick={() => router.back()}
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Go Back
+            </Button>
+
+            <Button
+              className="bg-orange-600 hover:bg-orange-700"
+              onClick={() => window.location.reload()}
+            >
+              Retry
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-stone-50 pt-24 pb-16 px-4">
+      <div className="container max-w-5xl mx-auto">
+        <div className="mb-8">
+          <Link
+            href="/dashboard"
+            className="text-stone-600 hover:text-orange-600 font-medium inline-flex items-center transition-colors gap-2 mb-6"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Dashboard
+          </Link>
+
+          <div className="bg-white border-2 border-stone-200 p-8 md:p-10 mb-6">
+            {recipe.imageUrl && (
+              <div className="relative w-full overflow-hidden h-72 mb-7">
+                <Image
+                  src={recipe.imageUrl}
+                  alt={recipe.title}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
+                  priority
+                />
+              </div>
+            )}
+
+            <div className="flex flex-wrap gap-2 mb-4">
+              <Badge
+                variant="outline"
+                className="text-orange-600 border-2 border-orange-200 capitalize"
+              >
+                {recipe.cuisine}
+              </Badge>
+
+              <Badge
+                variant="outline"
+                className="text-stone-600 border-2 border-stone-200 capitalize"
+              >
+                {recipe.category}
+              </Badge>
+            </div>
+
+            <h1 className="text-4xl md:text-5xl text-stone-900 font-bold tracking-tight mb-4">
+              {recipe.title}
+            </h1>
+
+            <p className="text-lg text-stone-600 font-light mb-6">
+              {recipe.description}
+            </p>
+
+            <div className="flex flex-wrap text-stone-600 gap-6 mb-6">
+              <div className="flex items-center gap-2">
+                <Clock className="w-5 h-5 text-orange-600" />
+                <span className="font-medium">
+                  {parseInt(recipe.prepTime) + parseInt(recipe.cookTime)} mins
+                  total
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Users className="w-5 h-5 text-orange-600" />
+                <span className="font-medium">{recipe.servings} servings</span>
+              </div>
+
+              {recipe.nutrition?.calories && (
+                <div className="flex items-center gap-2">
+                  <Flame className="w-5 h-5 text-orange-600" />
+                  <span className="font-medium">
+                    {recipe.nutrition.calories} cal/serving
+                  </span>
+                </div>
+              )}
+            </div>
+
+            <div className="flex flex-wrap gap-3">
+              <Button
+                className={`text-white transition-all gap-2 ${
+                  isRecipeSaved
+                    ? "bg-green-600 hover:bg-green-700 border-2 border-green-700"
+                    : "bg-orange-600 hover:bg-orange-700 border-2 border-orange-700"
+                }`}
+                onClick={handleToggleSave}
+                disabled={isSavingRecipe || isRemovingRecipe}
+              >
+                {isSavingRecipe || isRemovingRecipe ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    {isSavingRecipe ? "Saving..." : "Removing..."}
+                  </>
+                ) : isRecipeSaved ? (
+                  <>
+                    <BookmarkCheck className="w-4 h-4" />
+                    Saved to Collection
+                  </>
+                ) : (
+                  <>
+                    <Bookmark className="w-4 h-4" />
+                    Save to Collection
+                  </>
+                )}
+              </Button>
+
+              <PDFDownloadLink
+                document={<RecipePDF recipe={recipe} />}
+                fileName={`${recipe.title.replace(/\s+/g, "-").toLowerCase()}.pdf`}
+              >
+                {({ loading }) => (
+                  <Button
+                    variant="outline"
+                    className="text-orange-700 border-2 border-orange-600 hover:bg-orange-50 gap-2"
+                    disabled={loading}
+                  >
+                    <Download className="w-4 h-4" />
+                    {loading ? "Preparing PDF..." : "Download PDF"}
+                  </Button>
+                )}
+              </PDFDownloadLink>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid lg:grid-cols-3 gap-6">
+          {/* Left Column - Ingredients & Nutrition */}
+          <div className="lg:col-span-1 space-y-6">
+            <div className="bg-white border-2 border-stone-200 lg:sticky lg:top-24 p-6">
+              <h2 className="text-2xl text-stone-900 font-bold flex items-center gap-2 mb-4">
+                <ChefHat className="w-6 h-6 text-orange-600" /> Ingredients
+              </h2>
+
+              {Object.entries(
+                recipe.ingredients.reduce((acc, ingredient) => {
+                  const category = ingredient.category || "Other";
+                  if (!acc[category]) acc[category] = [];
+                  acc[category].push(ingredient);
+                  return acc;
+                }, {}),
+              ).map(([category, items]) => (
+                <div key={category} className="mb-6 last:mb-0">
+                  <h3 className="text-stone-500 text-sm font-bold uppercase tracking-wide mb-3">
+                    {category}
+                  </h3>
+
+                  <ul className="space-y-2">
+                    {items.map((ingredient, i) => (
+                      <li
+                        key={i}
+                        className="flex justify-between items-start gap-2 text-stone-700 border-b border-stone-100 last:border-0 py-2"
+                      >
+                        <span className="flex-1">{ingredient.item}</span>
+
+                        <span className="text-orange-600 text-sm font-bold whitespace-nowrap">
+                          {ingredient.amount}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+
+              {recipe.nutrition && (
+                <div className="border-t-2 border-stone-200 pt-6 mt-6">
+                  <h3 className="text-stone-900 text-sm font-bold flex items-center uppercase tracking-wide gap-2 mb-3">
+                    Nutrition (per serving)
+                    {!recipeData.isPro && (
+                      <span className="bg-orange-100 text-orange-700 text-xs font-semibold rounded-full px-2 py-0.5">
+                        PRO
+                      </span>
+                    )}
+                  </h3>
+
+                  <ProLockedSection
+                    isPro={recipeData.isPro}
+                    lockText="Nutrition Info is Pro-Only"
+                  >
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="bg-orange-50 text-center border-2 border-orange-100 p-3">
+                        <div className="text-2xl text-orange-600 font-bold">
+                          {recipe.nutrition.calories}
+                        </div>
+                        <div className="text-stone-500 text-xs font-bold uppercase tracking-wide">
+                          Calories
+                        </div>
+                      </div>
+
+                      <div className="bg-stone-50 text-center border-2 border-stone-100 p-3">
+                        <div className="text-2xl text-stone-900 font-bold">
+                          {recipe.nutrition.protein}
+                        </div>
+                        <div className="text-stone-500 text-xs font-bold uppercase tracking-wide">
+                          Protein
+                        </div>
+                      </div>
+
+                      <div className="bg-stone-50 text-center border-2 border-stone-100 p-3">
+                        <div className="text-2xl text-stone-900 font-bold">
+                          {recipe.nutrition.carbs}
+                        </div>
+                        <div className="text-stone-500 text-xs font-bold uppercase tracking-wide">
+                          Carbs
+                        </div>
+                      </div>
+
+                      <div className="bg-stone-50 text-center border-2 border-stone-100 p-3">
+                        <div className="text-2xl text-stone-900 font-bold">
+                          {recipe.nutrition.fat}
+                        </div>
+                        <div className="text-stone-500 text-xs font-bold uppercase tracking-wide">
+                          Fat
+                        </div>
+                      </div>
+                    </div>
+                  </ProLockedSection>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Right Column - Instructions & Tips */}
+          <div className="lg:col-span-2 space-y-6">
+            <div className="bg-white border-2 border-stone-200 p-8">
+              <h2 className="text-2xl text-stone-900 font-bold mb-6">
+                Step-by-Step Instructions
+              </h2>
+
+              <div>
+                {recipe.instructions.map((step, i) => (
+                  <div
+                    key={step.step}
+                    className={`relative pl-12 pb-8 ${
+                      i !== recipe.instructions.length - 1
+                        ? "border-l-2 border-orange-300 ml-5"
+                        : "ml-5"
+                    }`}
+                  >
+                    <div className="absolute top-0 -left-5 w-10 h-10 bg-orange-600 text-white font-bold border-2 border-orange-700 flex justify-center items-center">
+                      {step.step}
+                    </div>
+
+                    <div>
+                      <h3 className="text-lg text-stone-900 font-bold mb-2">
+                        {step.title}
+                      </h3>
+
+                      <p className="text-stone-700 font-light mb-3">
+                        {step.instruction}
+                      </p>
+
+                      {step.tip && (
+                        <div className="bg-orange-50 border-l-4 border-orange-600 p-4">
+                          <p className="text-orange-900 text-sm flex items-start gap-2">
+                            <Lightbulb className="w-4 h-4 fill-orange-600 shrink-0 mt-0.5" />
+
+                            <span>
+                              <strong className="font-bold">Pro Tip:</strong>
+                              {step.tip}
+                            </span>
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="bg-linear-to-br from-green-50 to-emerald-50 border-2 border-green-200 p-6 mt-8">
+                <div className="flex items-start gap-3">
+                  <CheckCircle2 className="w-6 h-6 text-green-600 shrink-0 mt-0.5" />
+
+                  <div>
+                    <h3 className="text-green-900 font-bold mb-1">
+                      You&apos;re all done!
+                    </h3>
+                    <p className="text-green-800 text-sm font-light">
+                      Plate your masterpiece and enjoy your delicious
+                      {recipe.title}!
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* General Tips */}
+            {recipe.tips && recipe.tips.length > 0 && (
+              <div className="bg-linear-to-br from-orange-50 to-amber-50 border-2 border-orange-200 p-8">
+                <h2 className="text-2xl text-stone-900 font-bold flex items-center gap-2 mb-4">
+                  <Lightbulb className="w-6 h-6 text-orange-600 fill-orange-600" />
+                  Chef&apos;s Tips & Tricks
+                  {!recipeData.isPro && (
+                    <span className="bg-orange-100 text-orange-700 text-xs font-semibold rounded-full px-2 py-0.5">
+                      PRO
+                    </span>
+                  )}
+                </h2>
+
+                <ProLockedSection
+                  isPro={recipeData.isPro}
+                  lockText="Chef Tips are Pro-Only"
+                  ctaText="Unlock Pro Tips →"
+                >
+                  <ul className="space-y-3">
+                    {recipe.tips.map((tip, i) => (
+                      <li
+                        key={i}
+                        className="text-stone-700 flex items-start gap-3"
+                      >
+                        <CheckCircle2 className="w-5 h-5 text-orange-600 shrink-0 mt-0.5" />
+                        <span className="font-light">{tip}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </ProLockedSection>
+              </div>
+            )}
+
+            {/* Substititions */}
+            {recipe.substitutions && recipe.substitutions.length > 0 && (
+              <div className="bg-white border-2 border-stone-200 p-8">
+                <h2 className="text-2xl text-stone-900 font-bold flex items-center gap-2 mb-4">
+                  Ingredient Substititions
+                  {!recipeData.isPro && (
+                    <span className="bg-orange-100 text-orange-700 text-xs font-semibold rounded-full px-2 py-0.5">
+                      PRO
+                    </span>
+                  )}
+                </h2>
+
+                <p className="text-stone-600 text-sm font-light mb-6">
+                  Dont&apos; have everything ? Here are some alternatives you
+                  can use:
+                </p>
+
+                <ProLockedSection
+                  isPro={recipeData.isPro}
+                  lockText="Substitutions are Pro-Only"
+                >
+                  <div className="space-y-4">
+                    {recipe.substitutions.map((substitute, i) => (
+                      <div
+                        key={i}
+                        className="border-b-2 border-stone-100 pb-4 last:border-0 last:pb-0"
+                      >
+                        <h3 className="text-stone-900 font-bold mb-2">
+                          Instead of{" "}
+                          <span className="text-orange-600">
+                            {substitute.original}
+                          </span>
+                          :
+                        </h3>
+
+                        <div className="flex flex-wrap gap-2">
+                          {substitute.alternatives.map((alternative, j) => (
+                            <Badge
+                              key={j}
+                              variant="outline"
+                              className="text-stone-600 border-2 border-stone-200 p-3"
+                            >
+                              {alternative}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </ProLockedSection>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function RecipePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-stone-50 pt-24 pb-16 px-4">
+          <div className="container max-w-4xl mx-auto text-center py-20">
+            <Loader2 className="w-16 h-16 text-orange-600 mx-auto animate-spin mb-6" />
+            <p className="text-stone-600">Loading Recipe...</p>
+          </div>
+        </div>
+      }
+    >
+      <RecipeContent />
+    </Suspense>
+  );
+}
