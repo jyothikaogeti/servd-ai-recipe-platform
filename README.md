@@ -6,8 +6,8 @@
 
 [![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js&logoColor=white)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19-149ECA?logo=react&logoColor=white)](https://react.dev/)
-[![Strapi](https://img.shields.io/badge/Strapi-5-4945FF?logo=strapi&logoColor=white)](https://strapi.io/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![Strapi](https://img.shields.io/badge/Strapi-5-4945FF?logo=strapi&logoColor=white)](https://strapi.io/)
 [![Clerk](https://img.shields.io/badge/Clerk-Auth-6C47FF?logo=clerk&logoColor=white)](https://clerk.com/)
 [![Google Gemini](https://img.shields.io/badge/Google_Gemini-AI-8E75B2?logo=googlegemini&logoColor=white)](https://ai.google.dev/)
 [![Arcjet](https://img.shields.io/badge/Arcjet-Security-FF5D01)](https://arcjet.com/)
@@ -30,8 +30,6 @@ The application combines:
 - Secure authentication
 - Tier-based usage controls
 - Scalable headless CMS architecture
-
-Instead of scrolling through generic recipe blogs, users photograph their pantry or fridge, and Servd's AI vision pipeline (Google Gemini) identifies the ingredients, estimates quantities, and generates complete, structured recipes — including step-by-step instructions, nutrition estimates, ingredient substitutions, and chef tips — tailored to what's actually available. Generated recipes are persisted to a relational data store so the same recipe is never regenerated twice, and a curated public recipe catalog (TheMealDB) is layered in for everyday discovery and browsing.
 
 ### 🎯 Problem Statement
 
@@ -133,66 +131,46 @@ Instead of scrolling through generic recipe blogs, users photograph their pantry
 
 ## 📁 Folder Structure
 
-```
-servd-ai-recipe-platform/
-│
-├── servd-frontend/                 # Next.js 16 application
-│   ├── app/
-│   │   ├── (auth)/                 # Route group — unauthenticated auth flows
-│   │   │   ├── sign-in/[[...sign-in]]/
-│   │   │   └── sign-up/[[...sign-up]]/
-│   │   ├── (main)/                 # Route group — authenticated app shell
-│   │   │   ├── dashboard/          # Recipe-of-the-day, categories, cuisines
-│   │   │   ├── recipe/             # AI recipe detail / generation view
-│   │   │   ├── recipes/            # Saved recipes + category/cuisine browsing
-│   │   │   │   ├── category/[category]/
-│   │   │   │   └── cuisine/[cuisine]/
-│   │   │   └── pantry/             # Pantry inventory + pantry-based suggestions
-│   │   │       └── recipes/
-│   │   ├── layout.js                # Root layout (ClerkProvider, Header, Toaster)
-│   │   ├── page.js                  # Public marketing landing page
-│   │   └── globals.css
-│   │
-│   ├── actions/                    # Server Actions — the application's "API layer"
-│   │   ├── mealdb.actions.js       # TheMealDB integration (cached fetches)
-│   │   ├── recipe.actions.js       # AI recipe generation, save/unsave, Gemini calls
-│   │   └── pantry.actions.js       # AI pantry scanning, CRUD pantry items
-│   │
-│   ├── components/
-│   │   ├── ui/                     # shadcn/ui primitives (button, card, dialog, tabs…)
-│   │   ├── Header.js                # Auth-aware nav with plan badge
-│   │   ├── RecipeCard.js / RecipeGrid.js
-│   │   ├── ImageUploader.js         # Dropzone + camera capture
-│   │   ├── AddToPantryModal.js      # Scan vs. manual entry tabs
-│   │   ├── PricingSection.js / PricingModal.js
-│   │   ├── ProLockedSection.js      # Reusable paywall overlay
-│   │   ├── RecipePDF.js             # @react-pdf/renderer document definition
-│   │   └── HowToCookModal.js / UserDropdown.js
-│   │
-│   ├── hooks/
-│   │   └── useFetch.js              # Generic async-state wrapper for Server Actions
-│   │
-│   ├── lib/
-│   │   ├── arcjet.js                 # Security rules + tiered rate-limit buckets
-│   │   ├── checkUser.js              # Clerk ↔ Strapi user sync / JIT provisioning
-│   │   ├── data.js                   # Static UI content (features, stats, emoji maps)
-│   │   └── utils.js                  # `cn()` className utility (clsx + tailwind-merge)
-│   │
-│   ├── proxy.js                     # Edge middleware: Clerk auth + Arcjet protection
-│   └── next.config.mjs               # Remote image patterns, experimental flags
-│
-└── servd-backend/                  # Strapi 5 headless CMS
-    ├── config/
-    │   ├── database.js              # Multi-driver DB config (Postgres/MySQL/SQLite)
-    │   ├── server.js / middlewares.js / plugins.js / api.js
-    ├── src/
-    │   ├── api/
-    │   │   ├── recipe/               # Recipe content-type + controller/route/service
-    │   │   ├── pantry-item/          # Pantry inventory content-type
-    │   │   └── saved-recipe/         # User ↔ Recipe join entity
-    │   └── extensions/
-    │       └── users-permissions/    # Extended User schema (clerkId, subscriptionTier)
-    └── public/uploads/                # Media asset storage
+```text
+servd-frontend/
+├── actions/
+│   ├── recipe.actions.js        # AI recipe generation, save/unsave
+│   ├── pantry.actions.js        # AI pantry scanning, pantry CRUD
+│   └── mealdb.actions.js        # Recipe catalog (TheMealDB) fetches
+├── app/
+│   ├── (auth)/                  # Sign-in / sign-up pages (Clerk)
+│   ├── (main)/                  # Dashboard, recipes & pantry pages
+│   ├── layout.js                # Root layout & global providers
+│   └── page.js                  # Landing page
+├── components/
+│   ├── ui/                      # Shadcn/UI primitives (Button, Card, Dialog...)
+│   ├── ImageUploader.js          # Pantry photo upload (camera + drag-drop)
+│   ├── RecipeCard.js             # Recipe display card
+│   ├── ProLockedSection.js       # Pro-feature paywall overlay
+│   └── RecipePDF.js              # Recipe-to-PDF export
+├── hooks/
+│   └── useFetch.js               # Async state wrapper for Server Actions
+├── lib/
+│   ├── arcjet.js                  # Rate limiting & bot protection
+│   ├── checkUser.js                # Clerk ↔ Strapi user sync
+│   └── utils.js                     # Shared helper functions
+├── public/
+│   └── logo-orange.png
+├── proxy.js                          # Auth + security middleware
+└── package.json
+
+servd-backend/
+├── config/
+│   └── database.js              # Database connection settings
+├── src/
+│   ├── api/
+│   │   ├── recipe/              # Recipe model, routes & controller
+│   │   ├── pantry-item/         # Pantry item model, routes & controller
+│   │   └── saved-recipe/        # Saved recipe model, routes & controller
+│   └── extensions/
+│       └── users-permissions/   # Extended User model (Clerk fields)
+└── package.json
+
 ```
 
 ---
