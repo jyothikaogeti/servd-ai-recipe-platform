@@ -131,16 +131,6 @@ Instead of scrolling through generic recipe blogs, users photograph their pantry
 
 ---
 
-### Architectural Highlights
-
-- **Server Actions as the API layer** — Every mutation (`scanPantryImage`, `getOrGenerateRecipe`, `saveRecipeToCollection`, etc.) is a `"use server"` function colocated in `/actions`, eliminating the need for a separate `pages/api` or route-handler layer for most application logic.
-- **Backend-for-frontend isolation** — The Strapi API token and all third-party secrets (Gemini, Unsplash) live exclusively on the server. The browser never receives credentials; all privileged calls are proxied through Server Actions.
-- **Headless CMS as the data backend** — Strapi provides auto-generated REST endpoints, an admin dashboard for content moderation, and a pluggable database layer, decoupling content modeling from frontend release cycles.
-- **Defense-in-depth security** — Requests pass through Arcjet (bot/WAF shielding) and Clerk (identity) _before_ reaching any business logic, implemented once in `proxy.js` middleware rather than duplicated per route.
-- **Just-in-time user provisioning** — On first authenticated request, `checkUser()` lazily creates a corresponding Strapi user record linked by `clerkId`, keeping Clerk as the source of truth for identity while Strapi owns relational application data.
-
----
-
 ## 📁 Folder Structure
 
 ```
