@@ -444,6 +444,4 @@ Building Servd involved hands-on, production-style experience with:
 
 ---
 
-<div align="center">
-**Made with 🧡 by Jyothika**
-</div>
+<div align="center">Made with 🧡 by Jyothika</div>
