@@ -11,7 +11,6 @@
 [![Clerk](https://img.shields.io/badge/Clerk-Auth-6C47FF?logo=clerk&logoColor=white)](https://clerk.com/)
 [![Google Gemini](https://img.shields.io/badge/Google_Gemini-AI-8E75B2?logo=googlegemini&logoColor=white)](https://ai.google.dev/)
 [![Arcjet](https://img.shields.io/badge/Arcjet-Security-FF5D01)](https://arcjet.com/)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](#license)
 
 </div>
 
