@@ -1,7 +1,7 @@
 import arcjet, { detectBot, shield, tokenBucket } from "@arcjet/next";
 
 export const arcjetClient = arcjet({
-  key: process.env.ARCJEY_KEY,
+  key: process.env.ARCJET_KEY,
   rules: [
     shield({
       mode: "LIVE",
