@@ -93,30 +93,30 @@ The application combines:
 
 ### Frontend — `servd-frontend`
 
-| Layer                    | Technology                                | Purpose                                                                           |
-| ------------------------ | ----------------------------------------- | --------------------------------------------------------------------------------- |
-| Framework                | **Next.js 16** (App Router)               | Server Components, Server Actions, file-based routing, route groups               |
-| UI Library               | **React 19**                              | Component model, hooks, Suspense                                                  |
-| Styling                  | **Tailwind CSS v4** + `tw-animate-css`    | Utility-first, zero-runtime styling with custom neobrutalist design tokens        |
-| Component System         | **shadcn/ui** + **Radix UI** (`radix-ui`) | Accessible, composable, unstyled primitives (Dialog, Tabs, etc.)                  |
-| Icons                    | **lucide-react**                          | Consistent SVG icon set                                                           |
-| Authentication & Billing | **Clerk** (`@clerk/nextjs`, `@clerk/ui`)  | Sign-in/up, session management, route protection, native subscription checkout    |
-| AI / LLM                 | **Google Gemini** (`@google/genai`)       | Multimodal vision (ingredient recognition) + structured text generation (recipes) |
-| Security / Rate Limiting | **Arcjet** (`@arcjet/next`)               | Bot detection, WAF shield, per-user token-bucket rate limiting                    |
-| File Upload              | **react-dropzone**                        | Drag-and-drop + native camera capture for pantry photos                           |
-| PDF Generation           | **@react-pdf/renderer**                   | Client-side recipe-to-PDF export                                                  |
-| Notifications            | **sonner**                                | Toast notifications for async action feedback                                     |
-| Loaders                  | **react-spinners**                        | Async loading states                                                              |
+| Technology                     | Purpose                                                                           |
+| ------------------------------ | --------------------------------------------------------------------------------- |
+| ⚡ **Next.js 16 (App Router)** | Server Components, Server Actions, file-based routing, route groups               |
+| ⚛️ **React 19**                | Component model, hooks, Suspense                                                  |
+| 🎨 **Tailwind CSS v4**         | Utility-first, zero-runtime styling with custom neobrutalist design tokens        |
+| 🧩 **shadcn/ui + Radix UI**    | Accessible, composable, unstyled primitives (Dialog, Tabs, etc.)                  |
+| 🎯 **lucide-react**            | Consistent SVG icon set                                                           |
+| 🔐 **Clerk**                   | Sign-in/up, session management, route protection, native subscription checkout    |
+| 🧠 **Google Gemini**           | Multimodal vision (ingredient recognition) + structured text generation (recipes) |
+| 🛡️ **Arcjet**                  | Bot detection, WAF shield, per-user token-bucket rate limiting                    |
+| 📤 **react-dropzone**          | Drag-and-drop + native camera capture for pantry photos                           |
+| 📄 **@react-pdf/renderer**     | Client-side recipe-to-PDF export                                                  |
+| 🔔 **sonner**                  | Toast notifications for async action feedback                                     |
+| ⏳ **react-spinners**          | Async loading states                                                              |
 
 ### Backend — `servd-backend`
 
-| Layer           | Technology                                                   | Purpose                                                            |
-| --------------- | ------------------------------------------------------------ | ------------------------------------------------------------------ |
-| Framework       | **Strapi 5** (headless CMS)                                  | REST API generation, content modeling, admin panel, RBAC           |
-| Database Driver | **PostgreSQL** (`pg`) — also config-ready for MySQL & SQLite | Persistent relational storage, environment-driven client selection |
-| Auth Plugin     | `@strapi/plugin-users-permissions`                           | Role-based REST permissions, custom user schema extension          |
-| Cloud Plugin    | `@strapi/plugin-cloud`                                       | Strapi Cloud deployment readiness                                  |
-| Admin UI        | React 18 + `styled-components`                               | Strapi's bundled content-management dashboard                      |
+| Technology                              | Purpose                                                            |
+| --------------------------------------- | ------------------------------------------------------------------ |
+| ⚡ **Strapi 5 (headless CMS)**          | REST API generation, content modeling, admin panel, RBAC           |
+| 🗄️ **PostgreSQL (`pg`)**                | Persistent relational storage, environment-driven client selection |
+| 🔐 **@strapi/plugin-users-permissions** | Role-based REST permissions, custom user schema extension          |
+| ☁️ **@strapi/plugin-cloud**             | Strapi Cloud deployment readiness                                  |
+| 🧩 **React 18 + styled-components**     | Strapi's bundled content-management dashboard                      |
 
 ### External Data & AI Services
 
