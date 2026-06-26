@@ -354,7 +354,7 @@ GEMINI_API_KEY=your_gemini_api_key
 UNSPLASH_ACCESS_KEY=your_unsplash_access_key
 
 # Arcjet (bot detection, shielding, rate limiting)
-ARCJEY_KEY=your_arcjet_site_key
+ARCJET_KEY=your_arcjet_site_key
 ```
 
 ### `servd-backend/.env`
